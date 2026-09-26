@@ -3,45 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NBA $20 Squad Builder: Advanced Simulation</title>
+  <title>NBA All-Time $20 Squad Builder</title>
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: #131b2e;
+      --bg: #070b14;
+      --card-bg: #111a2e;
       --accent: #f97316;
       --accent-hover: #ea580c;
       --p1: #38bdf8;
       --p2: #ec4899;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --border: #223049;
+      --border: #1e293b;
       --badge-fit: #10b981;
       --badge-penalty: #ef4444;
+      --gold: #fbbf24;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 14px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 14px; }
+    body { background: var(--bg); color: var(--text); padding: 12px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 12px; }
     
     header { text-align: center; }
-    h1 { font-size: 1.4rem; color: var(--accent); letter-spacing: 0.5px; }
-    .subtitle { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
+    h1 { font-size: 1.35rem; color: var(--accent); letter-spacing: 0.5px; }
+    .subtitle { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; }
 
     .card { background: var(--card-bg); border-radius: 12px; padding: 14px; border: 1px solid var(--border); }
 
-    /* Draft Card */
-    .draft-box { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    /* Драфт-зона */
+    .draft-box { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .player-card {
       width: 100%;
-      background: #090f1f;
+      background: #090e1c;
       border: 2px dashed var(--accent);
       border-radius: 12px;
       padding: 16px;
     }
     .player-name { font-size: 1.35rem; font-weight: 800; }
-    .player-meta { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-    .meta-tag { background: #1a253c; padding: 3px 8px; border-radius: 6px; font-weight: 600; color: #cbd5e1; }
+    .player-meta { color: var(--text-muted); font-size: 0.82rem; margin-top: 6px; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .meta-tag { background: #1a253c; padding: 4px 8px; border-radius: 6px; font-weight: 600; color: #cbd5e1; }
+    .meta-era-legend { background: #78350f; color: #fef08a; border: 1px solid #b45309; }
+    .meta-era-modern { background: #1e3a5f; color: #93c5fd; border: 1px solid #2563eb; }
 
-    .bid-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; }
+    .skip-counter {
+      font-size: 0.75rem;
+      color: #fb7185;
+      font-weight: 600;
+      background: #2b0b17;
+      padding: 3px 8px;
+      border-radius: 12px;
+      border: 1px solid #881337;
+    }
+
+    .bid-controls { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
     button {
       background: var(--accent);
       color: #fff;
@@ -59,33 +72,33 @@
     .btn-p2 { background: var(--p2); color: #500724; }
     .btn-skip { background: #334155; }
 
-    /* Rosters */
+    /* Ростеры */
     .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .team-card { border-top: 4px solid var(--border); }
     .team-card.p1 { border-color: var(--p1); }
     .team-card.p2 { border-color: var(--p2); }
     
-    .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .team-title { font-weight: 700; font-size: 0.95rem; }
     .budget-tag { font-size: 0.8rem; background: #000; padding: 3px 7px; border-radius: 6px; font-weight: 700; }
 
     .slot-list { display: flex; flex-direction: column; gap: 6px; }
     .slot {
-      background: #090f1f;
-      padding: 8px 10px;
+      background: #090e1c;
+      padding: 7px 9px;
       border-radius: 6px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border: 1px solid var(--border);
     }
-    .slot-pos { font-weight: 800; color: var(--text-muted); width: 26px; }
-    .slot-info { display: flex; flex-direction: column; align-items: flex-end; max-width: 80%; }
+    .slot-pos { font-weight: 800; color: var(--text-muted); width: 24px; }
+    .slot-info { display: flex; flex-direction: column; align-items: flex-end; max-width: 82%; }
     .slot-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .slot-fit { font-size: 0.68rem; margin-top: 2px; }
+    .slot-fit { font-size: 0.65rem; margin-top: 2px; }
 
-    /* Modal */
+    /* Модальное окно */
     .modal {
       display: none;
       position: fixed;
@@ -99,7 +112,7 @@
     .modal.active { display: flex; }
     .modal-content {
       background: var(--card-bg);
-      padding: 20px;
+      padding: 18px;
       border-radius: 14px;
       width: 100%;
       max-width: 520px;
@@ -111,38 +124,46 @@
     }
     .pos-btn-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
     .pos-btn { padding: 12px 0; text-align: center; font-size: 0.85rem; }
-    .pos-penalty-hint { font-size: 0.65rem; display: block; font-weight: normal; opacity: 0.8; margin-top: 2px; }
+    .pos-penalty-hint { font-size: 0.62rem; display: block; font-weight: normal; opacity: 0.8; margin-top: 2px; }
 
-    /* Simulation Results */
+    /* Результаты матча */
     .score-banner {
       display: flex;
       justify-content: space-around;
       align-items: center;
-      background: #090f1f;
+      background: #090e1c;
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 14px;
-      margin: 10px 0;
     }
     .score-box { text-align: center; }
     .score-num { font-size: 2.2rem; font-weight: 900; }
     .score-p1 { color: var(--p1); }
     .score-p2 { color: var(--p2); }
 
-    .breakdown-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
-    .breakdown-table th, .breakdown-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    .breakdown-table { width: 100%; border-collapse: collapse; font-size: 0.74rem; margin-top: 8px; }
+    .breakdown-table th, .breakdown-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); }
     .breakdown-table th { color: var(--text-muted); text-align: left; }
     .penalty-text { color: var(--badge-penalty); font-weight: 700; }
-    .fit-text { color: var(--badge-fit); font-weight: 700; }
 
     .narrative {
-      background: #090f1f;
+      background: #090e1c;
       border-left: 3px solid var(--accent);
       padding: 10px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       line-height: 1.4;
       color: #cbd5e1;
       border-radius: 4px;
+    }
+    .mvp-banner {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--gold);
+      background: #2b1f09;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #78350f;
     }
   </style>
 </head>
@@ -150,8 +171,8 @@
 
 <div class="container">
   <header>
-    <h1>🏀 NBA $20 DRAFT SIMULATOR</h1>
-    <p class="subtitle">Рейтинги 2K • Метрики КПД • Штраф за позицию • Реальный симулятор матча</p>
+    <h1>🏀 ALL-TIME NBA $20 DRAFT</h1>
+    <p class="subtitle">Легенды и современные звезды • Скрытые рейтинги 2K • Лимит на сбросы • Симуляция матча</p>
   </header>
 
   <!-- ДРАФТ-ЗОНА -->
@@ -159,22 +180,24 @@
     <div class="player-card">
       <div class="player-name" id="currentName">Нажмите «Начать драфт»</div>
       <div class="player-meta" id="currentMeta">
-        <span class="meta-tag">50+ действующих звезд NBA</span>
+        <span class="meta-tag">В колоде 120+ величайших игроков</span>
       </div>
+    </div>
+
+    <div>
+      <span class="skip-counter" id="skipCounterDisplay">Сбросов осталось: 4 / 4</span>
     </div>
     
     <div class="bid-controls" id="controls">
       <button id="startBtn" onclick="game.nextTurn()">Начать драфт</button>
-      <div id="actionControls" style="display:none; width: 100%; display: flex; flex-direction: column; gap: 8px;">
-        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
-          <label style="font-size: 0.85rem;">Ставка ($): 
-            <input type="number" id="bidAmount" value="1" min="1" max="20" style="width: 55px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: #090f1f; color: #fff; text-align: center; font-weight: 700;">
-          </label>
-        </div>
-        <div style="display: flex; gap: 8px; justify-content: center;">
+      <div id="actionControls" style="display:none; width: 100%; flex-direction: column; gap: 8px; align-items: center;">
+        <label style="font-size: 0.85rem;">Ставка ($): 
+          <input type="number" id="bidAmount" value="1" min="1" max="20" style="width: 55px; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: #090e1c; color: #fff; text-align: center; font-weight: 700;">
+        </label>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
           <button class="btn-p1" onclick="game.buyPlayer(1)">Купить Игрок 1</button>
           <button class="btn-p2" onclick="game.buyPlayer(2)">Купить Игрок 2</button>
-          <button class="btn-skip" onclick="game.skipPlayer()">Сброс</button>
+          <button class="btn-skip" id="skipBtn" onclick="game.skipPlayer()">Сброс игрока</button>
         </div>
       </div>
     </div>
@@ -184,7 +207,7 @@
   <section class="teams-grid">
     <div class="card team-card p1">
       <div class="team-header">
-        <span class="team-title" style="color:var(--p1)">Команда 1</span>
+        <span class="team-title" style="color:var(--p1)">Игрок 1</span>
         <span class="budget-tag" id="p1Budget">$20</span>
       </div>
       <div class="slot-list" id="p1Slots"></div>
@@ -192,7 +215,7 @@
 
     <div class="card team-card p2">
       <div class="team-header">
-        <span class="team-title" style="color:var(--p2)">Команда 2</span>
+        <span class="team-title" style="color:var(--p2)">Игрок 2</span>
         <span class="budget-tag" id="p2Budget">$20</span>
       </div>
       <div class="slot-list" id="p2Slots"></div>
@@ -200,110 +223,190 @@
   </section>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ВЫБОРА ПОЗИЦИИ С ОЦЕНКОЙ FIT/PENALTY -->
+<!-- МОДАЛ ВЫБОРА ПОЗИЦИИ -->
 <div class="modal" id="posModal">
   <div class="modal-content">
-    <h3 style="font-size:1.1rem;">Выберите позицию в пятерке</h3>
+    <h3 style="font-size:1.05rem;">Выберите позицию в пятерке</h3>
     <p style="font-size: 0.8rem; color: var(--text-muted);" id="posPromptPlayer"></p>
     <div class="pos-btn-group" id="posButtons"></div>
   </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ИТОГОВОГО МАТЧА И АНАЛИТИКИ -->
+<!-- МОДАЛ ФИНАЛА И ИТОГОВ МАТЧА -->
 <div class="modal" id="finishModal">
   <div class="modal-content">
-    <h2 style="text-align: center; font-size: 1.25rem;">РЕЗУЛЬТАТЫ СИМУЛЯЦИИ МАТЧА</h2>
+    <h2 style="text-align: center; font-size: 1.2rem;">ФИНАЛЬНЫЙ СЧЁТ И СИМУЛЯЦИЯ</h2>
     
     <div class="score-banner">
       <div class="score-box">
-        <div style="font-weight: 700; color: var(--p1); font-size: 0.9rem;">Игрок 1</div>
+        <div style="font-weight: 700; color: var(--p1); font-size: 0.85rem;">Игрок 1</div>
         <div class="score-num score-p1" id="p1Points">0</div>
       </div>
-      <div style="font-size: 1.3rem; font-weight: 900; color: var(--text-muted);">VS</div>
+      <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-muted);">VS</div>
       <div class="score-box">
-        <div style="font-weight: 700; color: var(--p2); font-size: 0.9rem;">Игрок 2</div>
+        <div style="font-weight: 700; color: var(--p2); font-size: 0.85rem;">Игрок 2</div>
         <div class="score-num score-p2" id="p2Points">0</div>
       </div>
     </div>
 
+    <div class="mvp-banner" id="mvpBanner"></div>
     <div id="narrativeBox" class="narrative"></div>
-    
     <div id="boxScores"></div>
 
-    <button onclick="location.reload()" style="margin-top: 10px; width: 100%;">Сыграть заново</button>
+    <button onclick="location.reload()" style="margin-top: 8px; width: 100%;">Сыграть заново</button>
   </div>
 </div>
 
 <script>
-// Расширенная база: Рейтинг 2K, Атака (OFF), Защита (DEF), Подборы (REB), Плеймейкинг (PLAY), КПД (PER)
-const PLAYERS = [
-  { name: "Nikola Jokic", pos: "C", sec: ["PF"], ovr: 98, off: 98, def: 82, reb: 97, play: 98, per: 31.8 },
-  { name: "Luka Doncic", pos: "PG", sec: ["SG"], ovr: 97, off: 98, def: 78, reb: 86, play: 98, per: 28.5 },
-  { name: "Giannis Antetokounmpo", pos: "PF", sec: ["C"], ovr: 97, off: 94, def: 96, reb: 96, play: 84, per: 29.8 },
-  { name: "Shai Gilgeous-Alexander", pos: "PG", sec: ["SG"], ovr: 97, off: 96, def: 92, reb: 74, play: 90, per: 29.2 },
-  { name: "Joel Embiid", pos: "C", sec: ["PF"], ovr: 96, off: 97, def: 91, reb: 94, play: 76, per: 31.4 },
-  { name: "LeBron James", pos: "SF", sec: ["PF", "PG"], ovr: 95, off: 94, def: 84, reb: 84, play: 96, per: 24.2 },
-  { name: "Stephen Curry", pos: "PG", sec: ["SG"], ovr: 95, off: 98, def: 74, reb: 64, play: 91, per: 23.8 },
-  { name: "Jayson Tatum", pos: "SF", sec: ["PF"], ovr: 95, off: 93, def: 90, reb: 88, play: 83, per: 22.9 },
-  { name: "Anthony Davis", pos: "C", sec: ["PF"], ovr: 94, off: 89, def: 97, reb: 97, play: 70, per: 26.8 },
-  { name: "Kevin Durant", pos: "PF", sec: ["SF"], ovr: 94, off: 96, def: 85, reb: 80, play: 82, per: 23.5 },
-  { name: "Anthony Edwards", pos: "SG", sec: ["SF"], ovr: 93, off: 93, def: 88, reb: 73, play: 81, per: 21.0 },
-  { name: "Devin Booker", pos: "SG", sec: ["PG"], ovr: 93, off: 94, def: 79, reb: 68, play: 88, per: 22.0 },
-  { name: "Jalen Brunson", pos: "PG", sec: ["SG"], ovr: 93, off: 95, def: 76, reb: 60, play: 89, per: 23.4 },
-  { name: "Donovan Mitchell", pos: "SG", sec: ["PG"], ovr: 92, off: 94, def: 82, reb: 69, play: 84, per: 22.8 },
-  { name: "Victor Wembanyama", pos: "C", sec: ["PF"], ovr: 91, off: 86, def: 98, reb: 92, play: 72, per: 23.1 },
-  { name: "Jaylen Brown", pos: "SG", sec: ["SF"], ovr: 91, off: 90, def: 88, reb: 76, play: 75, per: 19.8 },
-  { name: "Tyrese Haliburton", pos: "PG", sec: [], ovr: 90, off: 91, def: 72, reb: 60, play: 98, per: 22.4 },
-  { name: "Kyrie Irving", pos: "PG", sec: ["SG"], ovr: 90, off: 95, def: 74, reb: 65, play: 86, per: 21.5 },
-  { name: "Bam Adebayo", pos: "C", sec: ["PF"], ovr: 89, off: 82, def: 95, reb: 92, play: 78, per: 20.2 },
-  { name: "Damian Lillard", pos: "PG", sec: [], ovr: 89, off: 92, def: 68, reb: 60, play: 88, per: 20.9 },
-  { name: "De'Aaron Fox", pos: "PG", sec: [], ovr: 89, off: 91, def: 84, reb: 64, play: 83, per: 21.6 },
-  { name: "Jimmy Butler", pos: "SF", sec: ["SG"], ovr: 89, off: 87, def: 92, reb: 74, play: 82, per: 23.6 },
-  { name: "Domantas Sabonis", pos: "C", sec: ["PF"], ovr: 88, off: 86, def: 80, reb: 98, play: 89, per: 23.0 },
-  { name: "Paolo Banchero", pos: "PF", sec: ["SF"], ovr: 88, off: 89, def: 81, reb: 85, play: 80, per: 18.2 },
-  { name: "Chet Holmgren", pos: "PF", sec: ["C"], ovr: 87, off: 84, def: 92, reb: 88, play: 68, per: 20.1 },
-  { name: "Tyrese Maxey", pos: "SG", sec: ["PG"], ovr: 87, off: 90, def: 75, reb: 58, play: 82, per: 20.3 },
-  { name: "Zion Williamson", pos: "PF", sec: ["C"], ovr: 87, off: 91, def: 73, reb: 82, play: 77, per: 22.4 },
-  { name: "Lauri Markkanen", pos: "PF", sec: ["SF"], ovr: 86, off: 89, def: 76, reb: 86, play: 65, per: 21.2 },
-  { name: "Derrick White", pos: "PG", sec: ["SG"], ovr: 86, off: 82, def: 92, reb: 66, play: 83, per: 17.5 },
-  { name: "Karl-Anthony Towns", pos: "C", sec: ["PF"], ovr: 86, off: 90, def: 75, reb: 90, play: 68, per: 21.4 },
-  { name: "Alperen Sengun", pos: "C", sec: [], ovr: 85, off: 87, def: 76, reb: 91, play: 84, per: 21.8 },
-  { name: "Mikal Bridges", pos: "SF", sec: ["SG"], ovr: 84, off: 82, def: 88, reb: 67, play: 72, per: 15.6 },
-  { name: "Jalen Williams", pos: "SF", sec: ["SG", "PF"], ovr: 84, off: 84, def: 85, reb: 68, play: 79, per: 18.1 },
-  { name: "Aaron Gordon", pos: "PF", sec: ["SF"], ovr: 83, off: 81, def: 88, reb: 82, play: 72, per: 17.2 },
-  { name: "OG Anunoby", pos: "SF", sec: ["PF"], ovr: 83, off: 79, def: 93, reb: 69, play: 64, per: 15.1 },
-  { name: "Austin Reaves", pos: "SG", sec: ["PG"], ovr: 82, off: 83, def: 72, reb: 60, play: 80, per: 15.8 },
-  { name: "Josh Hart", pos: "SG", sec: ["SF"], ovr: 82, off: 75, def: 85, reb: 91, play: 74, per: 14.5 },
-  { name: "Brook Lopez", pos: "C", sec: [], ovr: 81, off: 77, def: 90, reb: 78, play: 55, per: 15.4 },
-  { name: "Alex Caruso", pos: "SG", sec: ["PG"], ovr: 81, off: 73, def: 94, reb: 62, play: 75, per: 14.8 },
-  { name: "Klay Thompson", pos: "SG", sec: ["SF"], ovr: 80, off: 82, def: 74, reb: 58, play: 65, per: 13.9 }
+// База из 120+ легенд и действующих звезд
+const ALL_PLAYERS = [
+  // --- ЛЕГЕНДЫ И РЕТРО-ЗВЕЗДЫ ---
+  { name: "Michael Jordan", era: "legend", pos: "SG", sec: ["SF"], ovr: 99, off: 99, def: 98, reb: 78, play: 88, per: 31.7 },
+  { name: "LeBron James ('13)", era: "legend", pos: "SF", sec: ["PF", "PG"], ovr: 99, off: 98, def: 97, reb: 90, play: 96, per: 31.6 },
+  { name: "Kobe Bryant", era: "legend", pos: "SG", sec: ["SF"], ovr: 98, off: 98, def: 95, reb: 74, play: 86, per: 28.0 },
+  { name: "Shaquille O'Neal", era: "legend", pos: "C", sec: [], ovr: 98, off: 98, def: 93, reb: 98, play: 65, per: 30.6 },
+  { name: "Magic Johnson", era: "legend", pos: "PG", sec: ["SG", "PF"], ovr: 98, off: 96, def: 84, reb: 88, play: 99, per: 26.9 },
+  { name: "Larry Bird", era: "legend", pos: "SF", sec: ["PF"], ovr: 98, off: 98, def: 88, reb: 92, play: 94, per: 26.5 },
+  { name: "Kareem Abdul-Jabbar", era: "legend", pos: "C", sec: [], ovr: 99, off: 99, def: 96, reb: 98, play: 78, per: 29.9 },
+  { name: "Tim Duncan", era: "legend", pos: "PF", sec: ["C"], ovr: 98, off: 94, def: 98, reb: 97, play: 80, per: 27.1 },
+  { name: "Wilt Chamberlain", era: "legend", pos: "C", sec: [], ovr: 98, off: 97, def: 98, reb: 99, play: 74, per: 28.7 },
+  { name: "Bill Russell", era: "legend", pos: "C", sec: ["PF"], ovr: 98, off: 82, def: 99, reb: 99, play: 82, per: 22.0 },
+  { name: "Hakeem Olajuwon", era: "legend", pos: "C", sec: [], ovr: 98, off: 96, def: 99, reb: 96, play: 75, per: 27.3 },
+  { name: "Stephen Curry ('16)", era: "legend", pos: "PG", sec: ["SG"], ovr: 97, off: 99, def: 76, reb: 66, play: 93, per: 31.5 },
+  { name: "Kevin Garnett", era: "legend", pos: "PF", sec: ["C", "SF"], ovr: 97, off: 92, def: 98, reb: 96, play: 84, per: 26.8 },
+  { name: "Dirk Nowitzki", era: "legend", pos: "PF", sec: ["C"], ovr: 96, off: 98, def: 78, reb: 90, play: 74, per: 25.3 },
+  { name: "Dwyane Wade", era: "legend", pos: "SG", sec: ["PG"], ovr: 96, off: 96, def: 92, reb: 74, play: 87, per: 27.6 },
+  { name: "Allen Iverson", era: "legend", pos: "SG", sec: ["PG"], ovr: 95, off: 97, def: 82, reb: 56, play: 85, per: 24.0 },
+  { name: "Charles Barkley", era: "legend", pos: "PF", sec: ["SF"], ovr: 96, off: 96, def: 80, reb: 98, play: 82, per: 27.5 },
+  { name: "Karl Malone", era: "legend", pos: "PF", sec: [], ovr: 96, off: 96, def: 87, reb: 94, play: 78, per: 26.3 },
+  { name: "John Stockton", era: "legend", pos: "PG", sec: [], ovr: 95, off: 88, def: 94, reb: 52, play: 99, per: 23.9 },
+  { name: "Scottie Pippen", era: "legend", pos: "SF", sec: ["SG", "PF"], ovr: 95, off: 88, def: 98, reb: 82, play: 88, per: 21.4 },
+  { name: "David Robinson", era: "legend", pos: "C", sec: [], ovr: 96, off: 94, def: 97, reb: 95, play: 72, per: 28.4 },
+  { name: "Tracy McGrady", era: "legend", pos: "SG", sec: ["SF"], ovr: 95, off: 97, def: 84, reb: 76, play: 86, per: 26.2 },
+  { name: "Vince Carter", era: "legend", pos: "SG", sec: ["SF"], ovr: 94, off: 96, def: 80, reb: 74, play: 78, per: 23.5 },
+  { name: "Steve Nash", era: "legend", pos: "PG", sec: [], ovr: 95, off: 96, def: 64, reb: 50, play: 99, per: 22.8 },
+  { name: "Jason Kidd", era: "legend", pos: "PG", sec: [], ovr: 94, off: 82, def: 95, reb: 82, play: 98, per: 20.4 },
+  { name: "Gary Payton", era: "legend", pos: "PG", sec: ["SG"], ovr: 94, off: 88, def: 98, reb: 62, play: 91, per: 21.9 },
+  { name: "Patrick Ewing", era: "legend", pos: "C", sec: [], ovr: 94, off: 92, def: 94, reb: 94, play: 64, per: 23.5 },
+  { name: "Ray Allen", era: "legend", pos: "SG", sec: [], ovr: 93, off: 96, def: 78, reb: 62, play: 76, per: 20.8 },
+  { name: "Paul Pierce", era: "legend", pos: "SF", sec: ["SG"], ovr: 93, off: 93, def: 84, reb: 78, play: 80, per: 21.6 },
+  { name: "Carmelo Anthony", era: "legend", pos: "SF", sec: ["PF"], ovr: 93, off: 96, def: 74, reb: 82, play: 72, per: 22.8 },
+  { name: "Chris Webber", era: "legend", pos: "PF", sec: ["C"], ovr: 93, off: 92, def: 82, reb: 92, play: 86, per: 22.6 },
+  { name: "Dennis Rodman", era: "legend", pos: "PF", sec: ["SF"], ovr: 91, off: 60, def: 99, reb: 99, play: 65, per: 15.8 },
+  { name: "Reggie Miller", era: "legend", pos: "SG", sec: [], ovr: 92, off: 94, def: 78, reb: 54, play: 74, per: 20.5 },
+  { name: "Grant Hill ('97)", era: "legend", pos: "SF", sec: ["PG", "SG"], ovr: 93, off: 92, def: 86, reb: 84, play: 90, per: 23.8 },
+  { name: "Penny Hardaway", era: "legend", pos: "PG", sec: ["SG"], ovr: 92, off: 91, def: 84, reb: 66, play: 90, per: 21.2 },
+  { name: "Dwight Howard ('09)", era: "legend", pos: "C", sec: [], ovr: 95, off: 88, def: 98, reb: 98, play: 58, per: 25.4 },
+  { name: "Derrick Rose ('11)", era: "legend", pos: "PG", sec: [], ovr: 94, off: 96, def: 80, reb: 62, play: 88, per: 23.5 },
+  { name: "Amar'e Stoudemire", era: "legend", pos: "PF", sec: ["C"], ovr: 92, off: 94, def: 76, reb: 90, play: 62, per: 23.2 },
+  { name: "Yao Ming", era: "legend", pos: "C", sec: [], ovr: 92, off: 92, def: 90, reb: 92, play: 65, per: 23.0 },
+  { name: "Manu Ginobili", era: "legend", pos: "SG", sec: ["PG"], ovr: 90, off: 89, def: 84, reb: 64, play: 87, per: 21.4 },
+  { name: "Tony Parker", era: "legend", pos: "PG", sec: [], ovr: 90, off: 91, def: 72, reb: 52, play: 89, per: 20.8 },
+  { name: "Pau Gasol", era: "legend", pos: "PF", sec: ["C"], ovr: 92, off: 91, def: 84, reb: 92, play: 82, per: 22.4 },
+  { name: "Chris Bosh", era: "legend", pos: "PF", sec: ["C"], ovr: 91, off: 89, def: 85, reb: 88, play: 72, per: 21.1 },
+  { name: "Dikembe Mutombo", era: "legend", pos: "C", sec: [], ovr: 90, off: 68, def: 98, reb: 96, play: 50, per: 18.2 },
+  { name: "Ben Wallace", era: "legend", pos: "C", sec: ["PF"], ovr: 91, off: 55, def: 99, reb: 98, play: 55, per: 17.5 },
+  { name: "Chauncey Billups", era: "legend", pos: "PG", sec: ["SG"], ovr: 91, off: 89, def: 88, reb: 55, play: 89, per: 20.0 },
+  { name: "Shawn Marion", era: "legend", pos: "SF", sec: ["PF"], ovr: 90, off: 86, def: 92, reb: 91, play: 68, per: 20.5 },
+  { name: "Rasheed Wallace", era: "legend", pos: "PF", sec: ["C"], ovr: 89, off: 87, def: 90, reb: 86, play: 72, per: 18.8 },
+  { name: "Gilbert Arenas", era: "legend", pos: "PG", sec: ["SG"], ovr: 91, off: 95, def: 72, reb: 58, play: 85, per: 22.4 },
+  { name: "Brandon Roy", era: "legend", pos: "SG", sec: ["SF"], ovr: 90, off: 92, def: 80, reb: 66, play: 82, per: 21.5 },
+  { name: "Peja Stojakovic", era: "legend", pos: "SF", sec: ["SG"], ovr: 88, off: 92, def: 70, reb: 72, play: 68, per: 19.8 },
+  { name: "Alonzo Mourning", era: "legend", pos: "C", sec: ["PF"], ovr: 92, off: 88, def: 95, reb: 93, play: 58, per: 22.6 },
+  { name: "Mitch Richmond", era: "legend", pos: "SG", sec: [], ovr: 89, off: 91, def: 80, reb: 60, play: 75, per: 19.5 },
+  { name: "Mark Price", era: "legend", pos: "PG", sec: [], ovr: 90, off: 92, def: 72, reb: 50, play: 92, per: 20.1 },
+  { name: "Bernard King", era: "legend", pos: "SF", sec: [], ovr: 92, off: 96, def: 74, reb: 74, play: 70, per: 22.2 },
+  { name: "Clyde Drexler", era: "legend", pos: "SG", sec: ["SF"], ovr: 95, off: 94, def: 90, reb: 82, play: 86, per: 23.8 },
+  { name: "Dominique Wilkins", era: "legend", pos: "SF", sec: [], ovr: 94, off: 96, def: 78, reb: 84, play: 72, per: 23.6 },
+  { name: "George Gervin", era: "legend", pos: "SG", sec: ["SF"], ovr: 94, off: 97, def: 76, reb: 70, play: 72, per: 24.0 },
+  { name: "Rick Barry", era: "legend", pos: "SF", sec: [], ovr: 94, off: 95, def: 82, reb: 78, play: 85, per: 23.2 },
+  { name: "Elvin Hayes", era: "legend", pos: "PF", sec: ["C"], ovr: 93, off: 90, def: 92, reb: 96, play: 62, per: 20.5 },
+  { name: "Walt Frazier", era: "legend", pos: "PG", sec: [], ovr: 94, off: 91, def: 96, reb: 74, play: 92, per: 21.8 },
+  { name: "Jerry West", era: "legend", pos: "PG", sec: ["SG"], ovr: 96, off: 97, def: 93, reb: 70, play: 93, per: 25.0 },
+  { name: "Oscar Robertson", era: "legend", pos: "PG", sec: ["SG"], ovr: 97, off: 97, def: 88, reb: 88, play: 98, per: 26.5 },
+  { name: "Moses Malone", era: "legend", pos: "C", sec: ["PF"], ovr: 96, off: 94, def: 91, reb: 99, play: 62, per: 25.8 },
+
+  // --- ДЕЙСТВУЮЩИЕ ЗВЕЗДЫ ---
+  { name: "Nikola Jokic", era: "modern", pos: "C", sec: ["PF"], ovr: 98, off: 98, def: 82, reb: 97, play: 98, per: 31.8 },
+  { name: "Luka Doncic", era: "modern", pos: "PG", sec: ["SG"], ovr: 97, off: 98, def: 78, reb: 86, play: 98, per: 28.5 },
+  { name: "Giannis Antetokounmpo", era: "modern", pos: "PF", sec: ["C"], ovr: 97, off: 94, def: 96, reb: 96, play: 84, per: 29.8 },
+  { name: "Shai Gilgeous-Alexander", era: "modern", pos: "PG", sec: ["SG"], ovr: 97, off: 96, def: 92, reb: 74, play: 90, per: 29.2 },
+  { name: "Joel Embiid", era: "modern", pos: "C", sec: ["PF"], ovr: 96, off: 97, def: 91, reb: 94, play: 76, per: 31.4 },
+  { name: "Stephen Curry", era: "modern", pos: "PG", sec: ["SG"], ovr: 95, off: 98, def: 74, reb: 64, play: 91, per: 23.8 },
+  { name: "LeBron James", era: "modern", pos: "SF", sec: ["PF", "PG"], ovr: 95, off: 94, def: 84, reb: 84, play: 96, per: 24.2 },
+  { name: "Jayson Tatum", era: "modern", pos: "SF", sec: ["PF"], ovr: 95, off: 93, def: 90, reb: 88, play: 83, per: 22.9 },
+  { name: "Anthony Davis", era: "modern", pos: "C", sec: ["PF"], ovr: 94, off: 89, def: 97, reb: 97, play: 70, per: 26.8 },
+  { name: "Kevin Durant", era: "modern", pos: "PF", sec: ["SF"], ovr: 94, off: 96, def: 85, reb: 80, play: 82, per: 23.5 },
+  { name: "Anthony Edwards", era: "modern", pos: "SG", sec: ["SF"], ovr: 93, off: 93, def: 88, reb: 73, play: 81, per: 21.0 },
+  { name: "Devin Booker", era: "modern", pos: "SG", sec: ["PG"], ovr: 93, off: 94, def: 79, reb: 68, play: 88, per: 22.0 },
+  { name: "Jalen Brunson", era: "modern", pos: "PG", sec: ["SG"], ovr: 93, off: 95, def: 76, reb: 60, play: 89, per: 23.4 },
+  { name: "Donovan Mitchell", era: "modern", pos: "SG", sec: ["PG"], ovr: 92, off: 94, def: 82, reb: 69, play: 84, per: 22.8 },
+  { name: "Victor Wembanyama", era: "modern", pos: "C", sec: ["PF"], ovr: 91, off: 86, def: 98, reb: 92, play: 72, per: 23.1 },
+  { name: "Jaylen Brown", era: "modern", pos: "SG", sec: ["SF"], ovr: 91, off: 90, def: 88, reb: 76, play: 75, per: 19.8 },
+  { name: "Tyrese Haliburton", era: "modern", pos: "PG", sec: [], ovr: 90, off: 91, def: 72, reb: 60, play: 98, per: 22.4 },
+  { name: "Kyrie Irving", era: "modern", pos: "PG", sec: ["SG"], ovr: 90, off: 95, def: 74, reb: 65, play: 86, per: 21.5 },
+  { name: "Bam Adebayo", era: "modern", pos: "C", sec: ["PF"], ovr: 89, off: 82, def: 95, reb: 92, play: 78, per: 20.2 },
+  { name: "Damian Lillard", era: "modern", pos: "PG", sec: [], ovr: 89, off: 92, def: 68, reb: 60, play: 88, per: 20.9 },
+  { name: "De'Aaron Fox", era: "modern", pos: "PG", sec: [], ovr: 89, off: 91, def: 84, reb: 64, play: 83, per: 21.6 },
+  { name: "Jimmy Butler", era: "modern", pos: "SF", sec: ["SG"], ovr: 89, off: 87, def: 92, reb: 74, play: 82, per: 23.6 },
+  { name: "Domantas Sabonis", era: "modern", pos: "C", sec: ["PF"], ovr: 88, off: 86, def: 80, reb: 98, play: 89, per: 23.0 },
+  { name: "Paolo Banchero", era: "modern", pos: "PF", sec: ["SF"], ovr: 88, off: 89, def: 81, reb: 85, play: 80, per: 18.2 },
+  { name: "Chet Holmgren", era: "modern", pos: "PF", sec: ["C"], ovr: 87, off: 84, def: 92, reb: 88, play: 68, per: 20.1 },
+  { name: "Tyrese Maxey", era: "modern", pos: "SG", sec: ["PG"], ovr: 87, off: 90, def: 75, reb: 58, play: 82, per: 20.3 },
+  { name: "Zion Williamson", era: "modern", pos: "PF", sec: ["C"], ovr: 87, off: 91, def: 73, reb: 82, play: 77, per: 22.4 },
+  { name: "Lauri Markkanen", era: "modern", pos: "PF", sec: ["SF"], ovr: 86, off: 89, def: 76, reb: 86, play: 65, per: 21.2 },
+  { name: "Derrick White", era: "modern", pos: "PG", sec: ["SG"], ovr: 86, off: 82, def: 92, reb: 66, play: 83, per: 17.5 },
+  { name: "Karl-Anthony Towns", era: "modern", pos: "C", sec: ["PF"], ovr: 86, off: 90, def: 75, reb: 90, play: 68, per: 21.4 },
+  { name: "Alperen Sengun", era: "modern", pos: "C", sec: [], ovr: 85, off: 87, def: 76, reb: 91, play: 84, per: 21.8 },
+  { name: "Mikal Bridges", era: "modern", pos: "SF", sec: ["SG"], ovr: 84, off: 82, def: 88, reb: 67, play: 72, per: 15.6 },
+  { name: "Jalen Williams", era: "modern", pos: "SF", sec: ["SG", "PF"], ovr: 84, off: 84, def: 85, reb: 68, play: 79, per: 18.1 },
+  { name: "Aaron Gordon", era: "modern", pos: "PF", sec: ["SF"], ovr: 83, off: 81, def: 88, reb: 82, play: 72, per: 17.2 },
+  { name: "OG Anunoby", era: "modern", pos: "SF", sec: ["PF"], ovr: 83, off: 79, def: 93, reb: 69, play: 64, per: 15.1 },
+  { name: "Austin Reaves", era: "modern", pos: "SG", sec: ["PG"], ovr: 82, off: 83, def: 72, reb: 60, play: 80, per: 15.8 },
+  { name: "Josh Hart", era: "modern", pos: "SG", sec: ["SF"], ovr: 82, off: 75, def: 85, reb: 91, play: 74, per: 14.5 },
+  { name: "Brook Lopez", era: "modern", pos: "C", sec: [], ovr: 81, off: 77, def: 90, reb: 78, play: 55, per: 15.4 },
+  { name: "Alex Caruso", era: "modern", pos: "SG", sec: ["PG"], ovr: 81, off: 73, def: 94, reb: 62, play: 75, per: 14.8 },
+  { name: "Klay Thompson", era: "modern", pos: "SG", sec: ["SF"], ovr: 80, off: 82, def: 74, reb: 58, play: 65, per: 13.9 },
+  { name: "Rudy Gobert", era: "modern", pos: "C", sec: [], ovr: 85, off: 70, def: 97, reb: 95, play: 50, per: 18.4 },
+  { name: "Trae Young", era: "modern", pos: "PG", sec: [], ovr: 89, off: 94, def: 60, reb: 48, play: 96, per: 21.0 },
+  { name: "Dejounte Murray", era: "modern", pos: "PG", sec: ["SG"], ovr: 84, off: 85, def: 86, reb: 68, play: 84, per: 17.9 },
+  { name: "Fred VanVleet", era: "modern", pos: "PG", sec: ["SG"], ovr: 83, off: 82, def: 85, reb: 55, play: 85, per: 16.5 },
+  { name: "Kristaps Porzingis", era: "modern", pos: "C", sec: ["PF"], ovr: 87, off: 88, def: 87, reb: 86, play: 65, per: 21.5 },
+  { name: "Myles Turner", era: "modern", pos: "C", sec: [], ovr: 83, off: 80, def: 88, reb: 84, play: 58, per: 17.0 },
+  { name: "CJ McCollum", era: "modern", pos: "SG", sec: ["PG"], ovr: 83, off: 87, def: 70, reb: 60, play: 78, per: 17.6 },
+  { name: "Zach LaVine", era: "modern", pos: "SG", sec: ["SF"], ovr: 83, off: 88, def: 72, reb: 65, play: 74, per: 18.0 },
+  { name: "Jerami Grant", era: "modern", pos: "PF", sec: ["SF"], ovr: 81, off: 83, def: 79, reb: 64, play: 65, per: 15.2 },
+  { name: "Darius Garland", era: "modern", pos: "PG", sec: [], ovr: 84, off: 88, def: 70, reb: 45, play: 88, per: 18.2 },
+  { name: "Jarrett Allen", era: "modern", pos: "C", sec: [], ovr: 85, off: 80, def: 88, reb: 93, play: 60, per: 19.5 },
+  { name: "Franz Wagner", era: "modern", pos: "SF", sec: ["PF", "SG"], ovr: 86, off: 86, def: 83, reb: 74, play: 78, per: 18.6 },
+  { name: "Jaden McDaniels", era: "modern", pos: "SF", sec: ["PF"], ovr: 81, off: 75, def: 91, reb: 62, play: 62, per: 13.0 }
 ];
 
 const POSITIONS = ["PG", "SG", "SF", "PF", "C"];
 
-// Дистанция штрафа за позицию (out of position)
-function calculatePositionFit(player, targetPos) {
+function calculateFit(player, targetPos) {
   if (player.pos === targetPos) {
-    return { status: "PERFECT", penalty: 0, text: "Родная позиция (+3% химия)" };
+    return { status: "PERFECT", penalty: 0, text: "Родная позиция (100% полезность)" };
   }
   if (player.sec && player.sec.includes(targetPos)) {
-    return { status: "SECONDARY", penalty: 3, text: "Вторая позиция (-3 к очкам)" };
+    return { status: "SECONDARY", penalty: 3, text: "Вторая позиция (-3 очка)" };
   }
-  // Сильное несоответствие позиций
   const posOrder = { PG: 1, SG: 2, SF: 3, PF: 4, C: 5 };
   const diff = Math.abs(posOrder[player.pos] - posOrder[targetPos]);
-  const penalty = diff * 5; // Чем сильнее разброс (например PG на C = 4*5 = -20)
-  return { status: "OUT_OF_POS", penalty, text: `Чужая позиция (-${penalty} штраф за габариты/роль)` };
+  const penalty = diff * 5; 
+  return { status: "OUT_OF_POS", penalty, text: `Чужая позиция (-${penalty} штраф)` };
 }
 
-class AdvancedGameEngine {
+class AllTimeDraftGame {
   constructor() {
-    this.deck = [...PLAYERS].sort(() => Math.random() - 0.5);
+    this.deck = [...ALL_PLAYERS].sort(() => Math.random() - 0.5);
     this.currentPlayer = null;
+    this.skipsLeft = 4;
     this.p1 = { budget: 20, roster: { PG: null, SG: null, SF: null, PF: null, C: null } };
     this.p2 = { budget: 20, roster: { PG: null, SG: null, SF: null, PF: null, C: null } };
     this.buyerPending = null;
     this.initSlots();
+    this.updateSkipUI();
   }
 
   initSlots() {
@@ -315,12 +418,23 @@ class AdvancedGameEngine {
           <div class="slot" id="${p}_${pos}">
             <span class="slot-pos">${pos}</span>
             <div class="slot-info">
-              <span class="slot-name">- свободно -</span>
+              <span class="slot-name">- пусто -</span>
               <span class="slot-fit"></span>
             </div>
           </div>`;
       });
     });
+  }
+
+  updateSkipUI() {
+    const disp = document.getElementById('skipCounterDisplay');
+    const btn = document.getElementById('skipBtn');
+    disp.innerText = `Сбросов осталось: ${this.skipsLeft} / 4`;
+    if (this.skipsLeft <= 0) {
+      if (btn) btn.disabled = true;
+      disp.style.color = '#ef4444';
+      disp.innerText = `Сбросов не осталось (0 / 4)`;
+    }
   }
 
   isTeamFull(playerNum) {
@@ -335,7 +449,7 @@ class AdvancedGameEngine {
     }
 
     if (this.deck.length === 0) {
-      alert("Колода игроков закончилась!");
+      alert("Все игроки разобраны!");
       this.simulateMatch();
       return;
     }
@@ -346,15 +460,25 @@ class AdvancedGameEngine {
     this.currentPlayer = this.deck.pop();
     document.getElementById('currentName').innerText = this.currentPlayer.name;
     
+    const eraClass = this.currentPlayer.era === 'legend' ? 'meta-era-legend' : 'meta-era-modern';
+    const eraText = this.currentPlayer.era === 'legend' ? '⭐ Легенда NBA' : '🔥 Действующая звезда';
     const secondaries = this.currentPlayer.sec.length ? ` / ${this.currentPlayer.sec.join('/')}` : '';
+
+    // Рейтинги 2K и КПД полностью СКРЫТЫ во время драфта
     document.getElementById('currentMeta').innerHTML = `
+      <span class="meta-tag ${eraClass}">${eraText}</span>
       <span class="meta-tag">Позиция: ${this.currentPlayer.pos}${secondaries}</span>
-      <span class="meta-tag">2K OVR: ${this.currentPlayer.ovr}</span>
-      <span class="meta-tag">КПД (PER): ${this.currentPlayer.per}</span>
+      <span class="meta-tag" style="background:#221526; color:#e9d5ff;">2K OVR: 🔒 Скрыто</span>
     `;
   }
 
   skipPlayer() {
+    if (this.skipsLeft <= 0) {
+      alert("Лимит сбросов исчерпан (максимум 4 за игру)!");
+      return;
+    }
+    this.skipsLeft--;
+    this.updateSkipUI();
     this.nextTurn();
   }
 
@@ -363,11 +487,11 @@ class AdvancedGameEngine {
     const team = playerNum === 1 ? this.p1 : this.p2;
 
     if (this.isTeamFull(playerNum)) {
-      alert(`У Игрока ${playerNum} уже полностью набрана стартовая пятерка!`);
+      alert(`У Игрока ${playerNum} уже полностью укомплектована стартовая пятерка!`);
       return;
     }
     if (team.budget < cost) {
-      alert(`Не хватает бюджета! Доступно всего: $${team.budget}`);
+      alert(`Не хватает бюджета! Доступно: $${team.budget}`);
       return;
     }
 
@@ -388,7 +512,7 @@ class AdvancedGameEngine {
 
     POSITIONS.forEach(pos => {
       const isOccupied = roster[pos] !== null;
-      const fit = calculatePositionFit(this.currentPlayer, pos);
+      const fit = calculateFit(this.currentPlayer, pos);
 
       const btn = document.createElement('button');
       btn.className = 'pos-btn';
@@ -433,16 +557,10 @@ class AdvancedGameEngine {
     this.nextTurn();
   }
 
-  // Расчёт метрик, КПД, синергии и симуляция реального баскетбольного счета
   simulateMatch() {
-    const calcTeamStats = (roster) => {
-      let totalOvr = 0;
-      let totalOff = 0;
-      let totalDef = 0;
-      let totalReb = 0;
-      let totalPlay = 0;
-      let totalPer = 0;
-      let totalPenalties = 0;
+    const getTeamData = (roster) => {
+      let totalOvr = 0, totalOff = 0, totalDef = 0, totalReb = 0, totalPlay = 0, totalPer = 0, totalPen = 0;
+      let playersList = [];
 
       POSITIONS.forEach(pos => {
         const p = roster[pos];
@@ -453,74 +571,91 @@ class AdvancedGameEngine {
           totalReb += p.reb;
           totalPlay += p.play;
           totalPer += p.per;
-          totalPenalties += p.fitPenalty;
+          totalPen += p.fitPenalty;
+          playersList.push(p);
         }
       });
-
-      // Базовые очки генерируются на основе Атаки vs Защиты соперника + КПД (PER)
-      return { totalOvr, totalOff, totalDef, totalReb, totalPlay, totalPer, totalPenalties };
+      return { totalOvr, totalOff, totalDef, totalReb, totalPlay, totalPer, totalPen, playersList };
     };
 
-    const t1 = calcTeamStats(this.p1.roster);
-    const t2 = calcTeamStats(this.p2.roster);
+    const t1 = getTeamData(this.p1.roster);
+    const t2 = getTeamData(this.p2.roster);
 
-    // Подсчет результативности (Счёт матча NBA ~ 90-130 очков)
-    // База атаки команды против обороны оппонента:
-    let p1Score = 100 + (t1.totalOff / 5 - 85) * 1.4 - (t2.totalDef / 5 - 85) * 0.9 + (t1.totalPlay / 5 - 80) * 0.5;
-    let p2Score = 100 + (t2.totalOff / 5 - 85) * 1.4 - (t1.totalDef / 5 - 85) * 0.9 + (t2.totalPlay / 5 - 80) * 0.5;
+    // Базовый расчет счета матча NBA
+    let p1Score = 102 + (t1.totalOff / 5 - 85) * 1.3 - (t2.totalDef / 5 - 85) * 0.85 + (t1.totalPlay / 5 - 75) * 0.4;
+    let p2Score = 102 + (t2.totalOff / 5 - 85) * 1.3 - (t1.totalDef / 5 - 85) * 0.85 + (t2.totalPlay / 5 - 75) * 0.4;
 
-    // Влияние борьбы на щитах (REB): преимущество даёт вторые шансы
+    // Влияние борьбы на щитах
     const rebDiff = (t1.totalReb - t2.totalReb) / 5;
-    p1Score += rebDiff * 0.8;
-    p2Score -= rebDiff * 0.8;
+    p1Score += rebDiff * 0.7;
+    p2Score -= rebDiff * 0.7;
 
-    // Влияние штрафов за позицию (out of position разрушает структуру игры)
-    p1Score -= t1.totalPenalties * 0.9;
-    p2Score -= t2.totalPenalties * 0.9;
+    // Влияние штрафов за позицию (out of position разрушает синергию)
+    p1Score -= t1.totalPen * 0.85;
+    p2Score -= t2.totalPen * 0.85;
 
-    // Округление счета
     let final1 = Math.round(p1Score);
     let final2 = Math.round(p2Score);
-    if (final1 === final2) final1 += 1; // Без ничьих в плей-офф
+    if (final1 === final2) final1 += 1;
 
     document.getElementById('p1Points').innerText = final1;
     document.getElementById('p2Points').innerText = final2;
 
-    // Генерируем аналитическое заключение матча
-    let narratives = [];
-    if (t1.totalPenalties > 10) narratives.push("❌ У Игрока 1 возник хаос из-за игроков не на своих позициях.");
-    if (t2.totalPenalties > 10) narratives.push("❌ Игрок 2 пострадал от дисбаланса ростера и штрафов за габариты.");
-    
-    if (t1.totalReb > t2.totalReb + 15) narratives.push("🔥 Игрок 1 полностью вычистил щиты за счёт превосходства подборов.");
-    else if (t2.totalReb > t1.totalReb + 15) narratives.push("🔥 Игрок 2 разгромил соперника вторыми шансами под кольцом.");
+    // Определение лучшего игрока матча (MVP)
+    const allDrafted = [...t1.playersList, ...t2.playersList];
+    allDrafted.sort((a, b) => (b.per + b.ovr * 0.2) - (a.per + a.ovr * 0.2));
+    const mvp = allDrafted[0];
+    document.getElementById('mvpBanner').innerText = `⭐ MVP МАТЧА: ${mvp.name} (2K: ${mvp.ovr} | КПД: ${mvp.per})`;
 
-    if (t1.totalDef > t2.totalDef + 10) narratives.push("🛡️ Железобетонная оборона Команды 1 задушила звёзд оппонента.");
-    else if (t2.totalDef > t1.totalDef + 10) narratives.push("🛡️ Элитный периметровый прессинг Команды 2 решил исход клатча.");
+    // Аналитическое заключение
+    let narratives = [];
+    if (t1.totalPen > 12) narratives.push("❌ Игрок 1 пострадал из-за сильного нарушения ролей и игры не на своих позициях.");
+    if (t2.totalPen > 12) narratives.push("❌ Игрок 2 потерял ритм из-за провалов в габаритах и чужих позиций.");
+    
+    if (t1.totalReb > t2.totalReb + 12) narratives.push("🏀 Команда 1 тотально забрала подборы под обоими щитами.");
+    else if (t2.totalReb > t1.totalReb + 12) narratives.push("🏀 Команда 2 доминировала в трехсекундной зоне и на втором темпе.");
+
+    if (t1.totalDef > t2.totalDef + 8) narratives.push("🛡️ Элитная опека Команды 1 выбила лидеров соперника из комфортной зоны.");
+    else if (t2.totalDef > t1.totalDef + 8) narratives.push("🛡️ Плотный защитный заслон Команды 2 заставил соперника совершать сложные броски.");
 
     if (narratives.length === 0) {
-      narratives.push("⚡ Матч равных возможностей: исход решило индивидуальное мастерство лидеров и КПД в концовке.");
+      narratives.push("⚡ Упорнейший матч легенд: разницу сделали хладнокровие в клатче и индивидуальный КПД.");
     }
+    document.getElementById('narrativeBox').innerHTML = `<b>Разбор симулятора:</b><br>${narratives.join('<br>')}`;
 
-    document.getElementById('narrativeBox').innerHTML = `<b>Аналитика матча:</b><br>${narratives.join('<br>')}`;
-
-    // Таблица детализации
+    // Подробный бокс-скор с раскрытыми рейтингами
     let table = `
       <table class="breakdown-table">
-        <tr><th>Метрика</th><th>Игрок 1</th><th>Игрок 2</th></tr>
-        <tr><td>Суммарный 2K OVR</td><td><b>${t1.totalOvr}</b></td><td><b>${t2.totalOvr}</b></td></tr>
-        <tr><td>Суммарный КПД (PER)</td><td>${t1.totalPer.toFixed(1)}</td><td>${t2.totalPer.toFixed(1)}</td></tr>
-        <tr><td>Атака / Защита (OFF / DEF)</td><td>${Math.round(t1.totalOff/5)} / ${Math.round(t1.totalDef/5)}</td><td>${Math.round(t2.totalOff/5)} / ${Math.round(t2.totalDef/5)}</td></tr>
-        <tr><td>Подборы (REB AVG)</td><td>${Math.round(t1.totalReb/5)}</td><td>${Math.round(t2.totalReb/5)}</td></tr>
-        <tr><td>Штрафы за позицию</td><td class="penalty-text">-${t1.totalPenalties} очк.</td><td class="penalty-text">-${t2.totalPenalties} очк.</td></tr>
-      </table>
+        <tr><th>Поз</th><th>Игрок 1 (2K / КПД)</th><th>Игрок 2 (2K / КПД)</th></tr>
     `;
+
+    POSITIONS.forEach(pos => {
+      const p1P = this.p1.roster[pos];
+      const p2P = this.p2.roster[pos];
+      const p1Info = p1P ? `${p1P.name} (<b>${p1P.ovr}</b> / ${p1P.per})` : '-';
+      const p2Info = p2P ? `${p2P.name} (<b>${p2P.ovr}</b> / ${p2P.per})` : '-';
+      table += `<tr><td><b>${pos}</b></td><td>${p1Info}</td><td>${p2Info}</td></tr>`;
+    });
+
+    table += `
+      <tr style="background:#090e1c; font-weight:700;">
+        <td>ИТОГ</td>
+        <td>OVR: ${t1.totalOvr} | КПД: ${t1.totalPer.toFixed(1)}</td>
+        <td>OVR: ${t2.totalOvr} | КПД: ${t2.totalPer.toFixed(1)}</td>
+      </tr>
+      <tr>
+        <td>Штрафы</td>
+        <td class="penalty-text">-${t1.totalPen} очк.</td>
+        <td class="penalty-text">-${t2.totalPen} очк.</td>
+      </tr>
+    </table>`;
 
     document.getElementById('boxScores').innerHTML = table;
     document.getElementById('finishModal').classList.add('active');
   }
 }
 
-const game = new AdvancedGameEngine();
+const game = new AllTimeDraftGame();
 </script>
 </body>
 </html>
