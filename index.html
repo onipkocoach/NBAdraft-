@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>NBA All-Time $20 Squad Builder</title>
+  <title>NBA All-Time $20 Squad Builder: Full Simulation</title>
   <style>
     :root {
       --bg: #070b14;
@@ -21,7 +21,7 @@
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); padding: 12px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 12px; }
+    .container { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 12px; }
     
     header { text-align: center; }
     h1 { font-size: 1.35rem; color: var(--accent); letter-spacing: 0.5px; }
@@ -106,7 +106,7 @@
       background: rgba(0,0,0,0.85);
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 12px;
       z-index: 100;
     }
     .modal.active { display: flex; }
@@ -115,11 +115,11 @@
       padding: 18px;
       border-radius: 14px;
       width: 100%;
-      max-width: 520px;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      max-height: 90vh;
+      max-height: 92vh;
       overflow-y: auto;
     }
     .pos-btn-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
@@ -134,37 +134,60 @@
       background: #090e1c;
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 14px;
+      padding: 12px;
     }
     .score-box { text-align: center; }
     .score-num { font-size: 2.2rem; font-weight: 900; }
     .score-p1 { color: var(--p1); }
     .score-p2 { color: var(--p2); }
 
-    .breakdown-table { width: 100%; border-collapse: collapse; font-size: 0.74rem; margin-top: 8px; }
-    .breakdown-table th, .breakdown-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); }
-    .breakdown-table th { color: var(--text-muted); text-align: left; }
-    .penalty-text { color: var(--badge-penalty); font-weight: 700; }
+    .quarter-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      text-align: center;
+      margin-top: 6px;
+      background: #090e1c;
+      border-radius: 6px;
+    }
+    .quarter-table th, .quarter-table td { padding: 6px; border: 1px solid var(--border); }
+    .quarter-table th { color: var(--text-muted); }
+
+    .box-score-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; margin-top: 6px; }
+    .box-score-table th, .box-score-table td { padding: 5px 6px; border-bottom: 1px solid var(--border); text-align: center; }
+    .box-score-table th:first-child, .box-score-table td:first-child { text-align: left; }
+    .box-score-table th { color: var(--text-muted); }
+
+    .team-box-header {
+      font-size: 0.85rem;
+      font-weight: 800;
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
 
     .narrative {
       background: #090e1c;
       border-left: 3px solid var(--accent);
       padding: 10px;
       font-size: 0.78rem;
-      line-height: 1.4;
+      line-height: 1.45;
       color: #cbd5e1;
       border-radius: 4px;
     }
+    .narrative h4 { color: #f8fafc; margin-bottom: 4px; font-size: 0.82rem; }
+
     .mvp-banner {
       text-align: center;
       font-size: 0.85rem;
       font-weight: 700;
       color: var(--gold);
       background: #2b1f09;
-      padding: 6px;
+      padding: 8px;
       border-radius: 6px;
       border: 1px solid #78350f;
     }
+    .penalty-text { color: var(--badge-penalty); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -172,7 +195,7 @@
 <div class="container">
   <header>
     <h1>🏀 ALL-TIME NBA $20 DRAFT</h1>
-    <p class="subtitle">Легенды и современные звезды • Скрытые рейтинги 2K • Лимит на сбросы • Симуляция матча</p>
+    <p class="subtitle">Легенды & Звёзды • Скрытые рейтинги 2K • Полная статистика матча (PTS/REB/AST)</p>
   </header>
 
   <!-- ДРАФТ-ЗОНА -->
@@ -235,30 +258,35 @@
 <!-- МОДАЛ ФИНАЛА И ИТОГОВ МАТЧА -->
 <div class="modal" id="finishModal">
   <div class="modal-content">
-    <h2 style="text-align: center; font-size: 1.2rem;">ФИНАЛЬНЫЙ СЧЁТ И СИМУЛЯЦИЯ</h2>
+    <h2 style="text-align: center; font-size: 1.2rem;">РЕЗУЛЬТАТЫ СИМУЛЯЦИИ МАТЧА</h2>
     
     <div class="score-banner">
       <div class="score-box">
         <div style="font-weight: 700; color: var(--p1); font-size: 0.85rem;">Игрок 1</div>
         <div class="score-num score-p1" id="p1Points">0</div>
       </div>
-      <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-muted);">VS</div>
+      <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-muted);">FINAL</div>
       <div class="score-box">
         <div style="font-weight: 700; color: var(--p2); font-size: 0.85rem;">Игрок 2</div>
         <div class="score-num score-p2" id="p2Points">0</div>
       </div>
     </div>
 
+    <div id="quarterScoreTable"></div>
+
     <div class="mvp-banner" id="mvpBanner"></div>
+    
+    <div id="matchStoryBox" class="narrative"></div>
     <div id="narrativeBox" class="narrative"></div>
-    <div id="boxScores"></div>
+    
+    <!-- Полная индивидуальная статистика -->
+    <div id="detailedBoxScores"></div>
 
     <button onclick="location.reload()" style="margin-top: 8px; width: 100%;">Сыграть заново</button>
   </div>
 </div>
 
 <script>
-// База из 120+ легенд и действующих звезд
 const ALL_PLAYERS = [
   // --- ЛЕГЕНДЫ И РЕТРО-ЗВЕЗДЫ ---
   { name: "Michael Jordan", era: "legend", pos: "SG", sec: ["SF"], ovr: 99, off: 99, def: 98, reb: 78, play: 88, per: 31.7 },
@@ -386,7 +414,7 @@ const POSITIONS = ["PG", "SG", "SF", "PF", "C"];
 
 function calculateFit(player, targetPos) {
   if (player.pos === targetPos) {
-    return { status: "PERFECT", penalty: 0, text: "Родная позиция (100% полезность)" };
+    return { status: "PERFECT", penalty: 0, text: "Родная позиция" };
   }
   if (player.sec && player.sec.includes(targetPos)) {
     return { status: "SECONDARY", penalty: 3, text: "Вторая позиция (-3 очка)" };
@@ -397,7 +425,7 @@ function calculateFit(player, targetPos) {
   return { status: "OUT_OF_POS", penalty, text: `Чужая позиция (-${penalty} штраф)` };
 }
 
-class AllTimeDraftGame {
+class FullMatchEngine {
   constructor() {
     this.deck = [...ALL_PLAYERS].sort(() => Math.random() - 0.5);
     this.currentPlayer = null;
@@ -464,7 +492,6 @@ class AllTimeDraftGame {
     const eraText = this.currentPlayer.era === 'legend' ? '⭐ Легенда NBA' : '🔥 Действующая звезда';
     const secondaries = this.currentPlayer.sec.length ? ` / ${this.currentPlayer.sec.join('/')}` : '';
 
-    // Рейтинги 2K и КПД полностью СКРЫТЫ во время драфта
     document.getElementById('currentMeta').innerHTML = `
       <span class="meta-tag ${eraClass}">${eraText}</span>
       <span class="meta-tag">Позиция: ${this.currentPlayer.pos}${secondaries}</span>
@@ -546,7 +573,7 @@ class AllTimeDraftGame {
     nameEl.style.color = '#38bdf8';
 
     if (fit.penalty === 0) {
-      fitEl.innerText = "✓ Идеально";
+      fitEl.innerText = "✓ Родная";
       fitEl.style.color = "var(--badge-fit)";
     } else {
       fitEl.innerText = `⚠ Штраф: -${fit.penalty}`;
@@ -557,105 +584,242 @@ class AllTimeDraftGame {
     this.nextTurn();
   }
 
-  simulateMatch() {
-    const getTeamData = (roster) => {
-      let totalOvr = 0, totalOff = 0, totalDef = 0, totalReb = 0, totalPlay = 0, totalPer = 0, totalPen = 0;
-      let playersList = [];
+  // Расчёт индивидуальной статистики игроков
+  generatePlayerStats(p, teamPoints, teamRebs, teamAssists) {
+    const effOff = Math.max(30, p.off - p.fitPenalty * 1.5);
+    const effReb = Math.max(20, p.reb - (p.assignedPos === 'C' && p.pos !== 'C' ? 15 : 0));
+    const effPlay = Math.max(30, p.play - (p.assignedPos === 'PG' && p.pos !== 'PG' ? 20 : 0));
 
+    // Очки пропорционально атакующему весу + КПД
+    const ptsWeight = (effOff * 1.3) + (p.per * 1.8);
+    const rebWeight = effReb * 2.0;
+    const astWeight = effPlay * 2.0;
+
+    return {
+      player: p,
+      ptsWeight,
+      rebWeight,
+      astWeight,
+      blk: Math.max(0, Math.round((p.def / 35) * (['C', 'PF'].includes(p.assignedPos) ? 1.6 : 0.4))),
+      stl: Math.max(0, Math.round((p.def / 40) * (['PG', 'SG'].includes(p.assignedPos) ? 1.4 : 0.6)))
+    };
+  }
+
+  simulateMatch() {
+    const getTeamTotals = (roster) => {
+      let ovr = 0, off = 0, def = 0, reb = 0, play = 0, per = 0, pen = 0;
       POSITIONS.forEach(pos => {
         const p = roster[pos];
-        if (p) {
-          totalOvr += p.ovr;
-          totalOff += p.off;
-          totalDef += p.def;
-          totalReb += p.reb;
-          totalPlay += p.play;
-          totalPer += p.per;
-          totalPen += p.fitPenalty;
-          playersList.push(p);
-        }
+        ovr += p.ovr;
+        off += p.off;
+        def += p.def;
+        reb += p.reb;
+        play += p.play;
+        per += p.per;
+        pen += p.fitPenalty;
       });
-      return { totalOvr, totalOff, totalDef, totalReb, totalPlay, totalPer, totalPen, playersList };
+      return { ovr, off, def, reb, play, per, pen };
     };
 
-    const t1 = getTeamData(this.p1.roster);
-    const t2 = getTeamData(this.p2.roster);
+    const t1 = getTeamTotals(this.p1.roster);
+    const t2 = getTeamTotals(this.p2.roster);
 
-    // Базовый расчет счета матча NBA
-    let p1Score = 102 + (t1.totalOff / 5 - 85) * 1.3 - (t2.totalDef / 5 - 85) * 0.85 + (t1.totalPlay / 5 - 75) * 0.4;
-    let p2Score = 102 + (t2.totalOff / 5 - 85) * 1.3 - (t1.totalDef / 5 - 85) * 0.85 + (t2.totalPlay / 5 - 75) * 0.4;
+    // Расчет четвертей с реальной баскетбольной флуктуацией
+    let q1 = [], q2 = [];
+    let p1Total = 0, p2Total = 0;
 
-    // Влияние борьбы на щитах
-    const rebDiff = (t1.totalReb - t2.totalReb) / 5;
-    p1Score += rebDiff * 0.7;
-    p2Score -= rebDiff * 0.7;
+    for (let i = 0; i < 4; i++) {
+      // Базовая результативность четверти ~ 24-32 очков
+      let qBase1 = 26 + (t1.off / 5 - 85) * 0.35 - (t2.def / 5 - 85) * 0.25 - (t1.pen * 0.22);
+      let qBase2 = 26 + (t2.off / 5 - 85) * 0.35 - (t1.def / 5 - 85) * 0.25 - (t2.pen * 0.22);
 
-    // Влияние штрафов за позицию (out of position разрушает синергию)
-    p1Score -= t1.totalPen * 0.85;
-    p2Score -= t2.totalPen * 0.85;
+      // Случайный фактор четверти (-4..+4 очка)
+      let noise1 = Math.floor(Math.random() * 9) - 4;
+      let noise2 = Math.floor(Math.random() * 9) - 4;
 
-    let final1 = Math.round(p1Score);
-    let final2 = Math.round(p2Score);
-    if (final1 === final2) final1 += 1;
+      let score1 = Math.max(16, Math.round(qBase1 + noise1));
+      let score2 = Math.max(16, Math.round(qBase2 + noise2));
 
-    document.getElementById('p1Points').innerText = final1;
-    document.getElementById('p2Points').innerText = final2;
-
-    // Определение лучшего игрока матча (MVP)
-    const allDrafted = [...t1.playersList, ...t2.playersList];
-    allDrafted.sort((a, b) => (b.per + b.ovr * 0.2) - (a.per + a.ovr * 0.2));
-    const mvp = allDrafted[0];
-    document.getElementById('mvpBanner').innerText = `⭐ MVP МАТЧА: ${mvp.name} (2K: ${mvp.ovr} | КПД: ${mvp.per})`;
-
-    // Аналитическое заключение
-    let narratives = [];
-    if (t1.totalPen > 12) narratives.push("❌ Игрок 1 пострадал из-за сильного нарушения ролей и игры не на своих позициях.");
-    if (t2.totalPen > 12) narratives.push("❌ Игрок 2 потерял ритм из-за провалов в габаритах и чужих позиций.");
-    
-    if (t1.totalReb > t2.totalReb + 12) narratives.push("🏀 Команда 1 тотально забрала подборы под обоими щитами.");
-    else if (t2.totalReb > t1.totalReb + 12) narratives.push("🏀 Команда 2 доминировала в трехсекундной зоне и на втором темпе.");
-
-    if (t1.totalDef > t2.totalDef + 8) narratives.push("🛡️ Элитная опека Команды 1 выбила лидеров соперника из комфортной зоны.");
-    else if (t2.totalDef > t1.totalDef + 8) narratives.push("🛡️ Плотный защитный заслон Команды 2 заставил соперника совершать сложные броски.");
-
-    if (narratives.length === 0) {
-      narratives.push("⚡ Упорнейший матч легенд: разницу сделали хладнокровие в клатче и индивидуальный КПД.");
+      q1.push(score1);
+      q2.push(score2);
+      p1Total += score1;
+      p2Total += score2;
     }
-    document.getElementById('narrativeBox').innerHTML = `<b>Разбор симулятора:</b><br>${narratives.join('<br>')}`;
 
-    // Подробный бокс-скор с раскрытыми рейтингами
-    let table = `
-      <table class="breakdown-table">
-        <tr><th>Поз</th><th>Игрок 1 (2K / КПД)</th><th>Игрок 2 (2K / КПД)</th></tr>
+    // Если ничья после 4 четвертей — овертайм (OT)
+    let ot1 = 0, ot2 = 0;
+    if (p1Total === p2Total) {
+      ot1 = Math.round(10 + Math.random() * 5);
+      ot2 = ot1 + (Math.random() > 0.5 ? 2 : -2);
+      p1Total += ot1;
+      p2Total += ot2;
+    }
+
+    document.getElementById('p1Points').innerText = p1Total;
+    document.getElementById('p2Points').innerText = p2Total;
+
+    // Генерация таблицы четвертей
+    let quarterHtml = `
+      <table class="quarter-table">
+        <tr><th>Команда</th><th>1-я</th><th>2-я</th><th>3-я</th><th>4-я</th>${ot1 > 0 ? '<th>OT</th>' : ''}<th>ИТОГ</th></tr>
+        <tr>
+          <td style="color:var(--p1); font-weight:700;">Игрок 1</td>
+          <td>${q1[0]}</td><td>${q1[1]}</td><td>${q1[2]}</td><td>${q1[3]}</td>
+          ${ot1 > 0 ? `<td>${ot1}</td>` : ''}
+          <td><b>${p1Total}</b></td>
+        </tr>
+        <tr>
+          <td style="color:var(--p2); font-weight:700;">Игрок 2</td>
+          <td>${q2[0]}</td><td>${q2[1]}</td><td>${q2[2]}</td><td>${q2[3]}</td>
+          ${ot2 > 0 ? `<td>${ot2}</td>` : ''}
+          <td><b>${p2Total}</b></td>
+        </tr>
+      </table>
+    `;
+    document.getElementById('quarterScoreTable').innerHTML = quarterHtml;
+
+    // Раскладка индивидуальной статистики
+    const assignBoxScores = (roster, teamPts) => {
+      const statsList = POSITIONS.map(pos => this.generatePlayerStats(roster[pos]));
+      const sumPtsW = statsList.reduce((acc, s) => acc + s.ptsWeight, 0);
+      const sumRebW = statsList.reduce((acc, s) => acc + s.rebWeight, 0);
+      const sumAstW = statsList.reduce((acc, s) => acc + s.astWeight, 0);
+
+      const totalTeamRebs = 42 + Math.round((statsList.reduce((a, s) => a + s.player.reb, 0) / 5 - 80) * 0.5);
+      const totalTeamAst = Math.round(teamPts * 0.6);
+
+      let allocatedPts = 0;
+      let finalBoxes = statsList.map((s, idx) => {
+        let pts = Math.round((s.ptsWeight / sumPtsW) * teamPts);
+        let reb = Math.max(1, Math.round((s.rebWeight / sumRebW) * totalTeamRebs));
+        let ast = Math.max(0, Math.round((s.astWeight / sumAstW) * totalTeamAst));
+        allocatedPts += pts;
+        return { ...s, pts, reb, ast };
+      });
+
+      // Калибровка суммы очков под точный командный счет
+      let diffPts = teamPts - allocatedPts;
+      finalBoxes[0].pts += diffPts;
+
+      return finalBoxes;
+    };
+
+    const b1 = assignBoxScores(this.p1.roster, p1Total);
+    const b2 = assignBoxScores(this.p2.roster, p2Total);
+
+    // Определение MVP матча
+    const allBox = [...b1, ...b2];
+    allBox.sort((a, b) => (b.pts * 1.0 + b.reb * 1.3 + b.ast * 1.5 + b.blk * 2 + b.stl * 2) - 
+                          (a.pts * 1.0 + a.reb * 1.3 + a.ast * 1.5 + a.blk * 2 + a.stl * 2));
+    const mvp = allBox[0];
+    const mvpOwner = b1.includes(mvp) ? "Игрок 1" : "Игрок 2";
+    document.getElementById('mvpBanner').innerHTML = `
+      🏆 <b>MVP МАТЧА:</b> ${mvp.player.name} (${mvpOwner})<br>
+      <span style="font-size:0.75rem; color:#fde68a;">${mvp.pts} PTS • ${mvp.reb} REB • ${mvp.ast} AST • ${mvp.blk} BLK • ${mvp.stl} STL (2K: ${mvp.player.ovr})</span>
     `;
 
-    POSITIONS.forEach(pos => {
-      const p1P = this.p1.roster[pos];
-      const p2P = this.p2.roster[pos];
-      const p1Info = p1P ? `${p1P.name} (<b>${p1P.ovr}</b> / ${p1P.per})` : '-';
-      const p2Info = p2P ? `${p2P.name} (<b>${p2P.ovr}</b> / ${p2P.per})` : '-';
-      table += `<tr><td><b>${pos}</b></td><td>${p1Info}</td><td>${p2Info}</td></tr>`;
-    });
+    // ХРОНИКА МАТЧА (Полная история)
+    let leadQ1 = q1[0] > q2[0] ? "Игрок 1 захватил лидерство на старте благодаря быстрым отрывам" : (q2[0] > q1[0] ? "Игрок 2 увереннее вошёл в матч, сразу навязав высокий темп" : "Первая четверть прошла в абсолютно равной перестрелке очко в очко");
+    
+    let midGame = "";
+    let half1 = q1[0] + q1[1];
+    let half2 = q2[0] + q2[1];
+    if (half1 > half2 + 6) {
+      midGame = `К большому перерыву Игрок 1 оформил комфортный гандикап (+${half1 - half2} очков), разрывая чужую опеку.`;
+    } else if (half2 > half1 + 6) {
+      midGame = `Во второй четверти Игрок 2 выдал мощный рывок (+${half2 - half1} к перерыву), плотно закрыв периметр.`;
+    } else {
+      midGame = `К большому перерыву на табло царило равновесие (${half1}:${half2}) — ни одна команда не отпускала соперника больше чем на одно владение.`;
+    }
 
-    table += `
-      <tr style="background:#090e1c; font-weight:700;">
-        <td>ИТОГ</td>
-        <td>OVR: ${t1.totalOvr} | КПД: ${t1.totalPer.toFixed(1)}</td>
-        <td>OVR: ${t2.totalOvr} | КПД: ${t2.totalPer.toFixed(1)}</td>
-      </tr>
-      <tr>
-        <td>Штрафы</td>
-        <td class="penalty-text">-${t1.totalPen} очк.</td>
-        <td class="penalty-text">-${t2.totalPen} очк.</td>
-      </tr>
-    </table>`;
+    let clutchStory = "";
+    if (p1Total > p2Total) {
+      clutchStory = `🔥 <b>Клатч:</b> В 4-й четверти Игрок 1 дожал концовку. Решающие владения хладнокровно реализовал <b>${b1[0].player.name}</b>, а защита не позволила Игроку 2 провести спасительную атаку.`;
+    } else {
+      clutchStory = `🔥 <b>Клатч:</b> Концовка осталась за Игроком 2: ключевой перехват и хладнокровные попадания от <b>${b2[0].player.name}</b> переломили чашу весов в последние две минуты матча.`;
+    }
 
-    document.getElementById('boxScores').innerHTML = table;
+    document.getElementById('matchStoryBox').innerHTML = `
+      <h4>Хроника матча:</h4>
+      • <b>Старт:</b> ${leadQ1}.<br>
+      • <b>Экватор:</b> ${midGame}<br>
+      • ${clutchStory}
+    `;
+
+    // ПОЛНЫЙ ДВУСТОРОННИЙ АНАЛИЗ (Игрок 1 и Игрок 2)
+    let p1Pros = [], p1Cons = [];
+    let p2Pros = [], p2Cons = [];
+
+    // Анализ Игрока 1
+    if (t1.pen === 0) p1Pros.push("Идеальная позиционная химия — все 5 игроков действовали на своих родных местах.");
+    else if (t1.pen > 10) p1Cons.push(`Позиционный хаос (-${t1.pen} штрафа): игроки теряли позиции и уступали в скорости/габаритах.`);
+    
+    if (t1.reb >= t2.reb) p1Pros.push("Надёжный контроль отскока и вторых шансов на щите.");
+    else p1Cons.push("Проигранная дуэль на подборах под своим кольцом.");
+
+    if (t1.def > 90) p1Pros.push("Элитный защитный рейтинг — сопернику было тяжело атаковать из 'краски'.");
+    if (t1.off < 85) p1Cons.push("Периодические застои в позиционном нападении.");
+
+    // Анализ Игрока 2
+    if (t2.pen === 0) p2Pros.push("Безупречный подбор состава по амплуа — нулевые позиционные штрафы.");
+    else if (t2.pen > 10) p2Cons.push(`Ощутимый штраф за смену позиций (-${t2.pen}): провалы при сдваивании и опеке.`);
+
+    if (t2.reb >= t1.reb) p2Pros.push("Мощное превосходство 'больших' игроков на щитах.");
+    else p2Cons.push("Уязвимость на подборах против атлетичной передней линии соперника.");
+
+    if (t2.def > 90) p2Pros.push("Высокая плотность в защите на дуге и перехваты на линиях передач.");
+    if (t2.off < 85) p2Cons.push("Сложности с набором очков при плотной персональной опеке.");
+
+    let analysisHtml = `
+      <h4>Разбор выступления команд:</h4>
+      <div style="margin-bottom:6px;">
+        <b style="color:var(--p1);">Игрок 1:</b><br>
+        ${p1Pros.length ? `✓ ${p1Pros.join('<br>✓ ')}<br>` : ''}
+        ${p1Cons.length ? `<span class="penalty-text">⚠ ${p1Cons.join('<br>⚠ ')}</span>` : ''}
+      </div>
+      <div>
+        <b style="color:var(--p2);">Игрок 2:</b><br>
+        ${p2Pros.length ? `✓ ${p2Pros.join('<br>✓ ')}<br>` : ''}
+        ${p2Cons.length ? `<span class="penalty-text">⚠ ${p2Cons.join('<br>⚠ ')}</span>` : ''}
+      </div>
+    `;
+    document.getElementById('narrativeBox').innerHTML = analysisHtml;
+
+    // ПОЛНЫЕ ТАБЛИЦЫ СТАТИСТИКИ (BOX SCORE)
+    const renderTable = (boxes, teamTitle, teamColor, totals) => {
+      let rows = boxes.map(b => `
+        <tr>
+          <td><b>${b.player.assignedPos}</b> ${b.player.name} <span style="font-size:0.65rem; color:#94a3b8;">(${b.player.ovr})</span></td>
+          <td><b>${b.pts}</b></td>
+          <td>${b.reb}</td>
+          <td>${b.ast}</td>
+          <td>${b.stl}</td>
+          <td>${b.blk}</td>
+        </tr>
+      `).join('');
+
+      return `
+        <div class="team-box-header" style="color:${teamColor};">
+          <span>${teamTitle} (2K OVR: ${totals.ovr} | КПД: ${totals.per.toFixed(1)})</span>
+          ${totals.pen > 0 ? `<span class="penalty-text">Штраф: -${totals.pen} очк.</span>` : '<span style="color:var(--badge-fit);">Штраф: 0</span>'}
+        </div>
+        <table class="box-score-table">
+          <tr><th>Игрок</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th></tr>
+          ${rows}
+        </table>
+      `;
+    };
+
+    document.getElementById('detailedBoxScores').innerHTML = `
+      ${renderTable(b1, "Команда 1 (Игрок 1)", "var(--p1)", t1)}
+      ${renderTable(b2, "Команда 2 (Игрок 2)", "var(--p2)", t2)}
+    `;
+
     document.getElementById('finishModal').classList.add('active');
   }
 }
 
-const game = new AllTimeDraftGame();
+const game = new FullMatchEngine();
 </script>
 </body>
 </html>
