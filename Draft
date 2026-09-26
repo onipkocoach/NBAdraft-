@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NBA $20 Squad Builder</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --p1: #3b82f6;
+      --p2: #ec4899;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 650px; display: flex; flex-direction: column; gap: 16px; }
+    
+    header { text-align: center; }
+    h1 { font-size: 1.5rem; color: var(--accent); }
+    .subtitle { font-size: 0.85rem; color: var(--text-muted); }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 16px; border: 1px solid var(--border); }
+
+    /* Arena & Draft Box */
+    .draft-box { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .player-card {
+      width: 100%;
+      background: #0b1120;
+      border: 2px dashed var(--accent);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .player-name { font-size: 1.4rem; font-weight: bold; }
+    .player-meta { color: var(--text-muted); font-size: 0.95rem; margin-top: 4px; }
+
+    .bid-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; margin-top: 8px; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-p1 { background: var(--p1); }
+    .btn-p2 { background: var(--p2); }
+    .btn-skip { background: #475569; }
+
+    /* Rosters */
+    .teams-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .team-card { border-top: 4px solid var(--border); }
+    .team-card.p1 { border-color: var(--p1); }
+    .team-card.p2 { border-color: var(--p2); }
+    
+    .team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .team-title { font-weight: bold; font-size: 1rem; }
+    .budget-tag { font-size: 0.85rem; background: #000; padding: 4px 8px; border-radius: 6px; }
+
+    .slot-list { display: flex; flex-direction: column; gap: 6px; }
+    .slot {
+      background: #0f172a;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+    }
+    .slot-pos { font-weight: bold; color: var(--text-muted); width: 26px; }
+    .slot-filled { color: #fff; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Modals / Placement */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .pos-btn-group { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .pos-btn { padding: 10px 0; }
+
+    /* Game Over */
+    .results-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+    .results-table th, .results-table td { padding: 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    .winner-banner { font-size: 1.3rem; font-weight: bold; color: #4ade80; text-align: center; margin: 12px 0; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>NBA $20 SQUAD DRAFT</h1>
+    <p class="subtitle">Собери стартовую пятерку на $20 и победи по рейтингу 2K</p>
+  </header>
+
+  <!-- ДРАФТ-ЗОНА -->
+  <section class="card draft-box" id="draftBox">
+    <div class="player-card">
+      <div class="player-name" id="currentName">Нажмите "Старт"</div>
+      <div class="player-meta" id="currentMeta">Рандомный пул игроков NBA</div>
+    </div>
+    
+    <div class="bid-controls" id="controls">
+      <button id="startBtn" onclick="game.nextTurn()">Начать игру</button>
+      <div id="actionControls" style="display:none; width: 100%; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
+          <label>Ставка ($): <input type="number" id="bidAmount" value="1" min="1" max="20" style="width: 50px; padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: #0b1120; color: #fff; text-align: center;"></label>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button class="btn-p1" onclick="game.buyPlayer(1)">Купить Игрок 1</button>
+          <button class="btn-p2" onclick="game.buyPlayer(2)">Купить Игрок 2</button>
+          <button class="btn-skip" onclick="game.skipPlayer()">Сброс</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- РОСТЕРЫ КОМАНД -->
+  <section class="teams-grid">
+    <div class="card team-card p1">
+      <div class="team-header">
+        <span class="team-title" style="color:var(--p1)">Игрок 1</span>
+        <span class="budget-tag" id="p1Budget">$20</span>
+      </div>
+      <div class="slot-list" id="p1Slots"></div>
+    </div>
+
+    <div class="card team-card p2">
+      <div class="team-header">
+        <span class="team-title" style="color:var(--p2)">Игрок 2</span>
+        <span class="budget-tag" id="p2Budget">$20</span>
+      </div>
+      <div class="slot-list" id="p2Slots"></div>
+    </div>
+  </section>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ВЫБОРА ПОЗИЦИИ -->
+<div class="modal" id="posModal">
+  <div class="modal-content">
+    <h3>Выберите позицию</h3>
+    <p style="font-size: 0.85rem; color: var(--text-muted);">Куда поставить игрока в вашей стартовой пятерке?</p>
+    <div class="pos-btn-group" id="posButtons"></div>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО ИТОГОВ -->
+<div class="modal" id="finishModal">
+  <div class="modal-content" style="max-width: 500px;">
+    <h2>ФИНАЛ: РЕЙТИНГИ 2K</h2>
+    <div id="winnerBanner" class="winner-banner"></div>
+    <div id="finalScores"></div>
+    <button onclick="location.reload()" style="margin-top: 10px;">Сыграть заново</button>
+  </div>
+</div>
+
+<script>
+// База игроков с позициями и рейтингами 2K
+const PLAYERS = [
+  { name: "Nikola Jokic", pos: "C", ovr: 98 },
+  { name: "Luka Doncic", pos: "PG", ovr: 97 },
+  { name: "Giannis Antetokounmpo", pos: "PF", ovr: 97 },
+  { name: "Shai Gilgeous-Alexander", pos: "PG", ovr: 97 },
+  { name: "Joel Embiid", pos: "C", ovr: 96 },
+  { name: "LeBron James", pos: "SF", ovr: 95 },
+  { name: "Stephen Curry", pos: "PG", ovr: 95 },
+  { name: "Jayson Tatum", pos: "SF", ovr: 95 },
+  { name: "Kevin Durant", pos: "PF", ovr: 94 },
+  { name: "Anthony Davis", pos: "C", ovr: 94 },
+  { name: "Anthony Edwards", pos: "SG", ovr: 93 },
+  { name: "Devin Booker", pos: "SG", ovr: 93 },
+  { name: "Jalen Brunson", pos: "PG", ovr: 93 },
+  { name: "Donovan Mitchell", pos: "SG", ovr: 92 },
+  { name: "Victor Wembanyama", pos: "C", ovr: 91 },
+  { name: "Jaylen Brown", pos: "SG", ovr: 91 },
+  { name: "Tyrese Haliburton", pos: "PG", ovr: 90 },
+  { name: "Kyrie Irving", pos: "PG", ovr: 90 },
+  { name: "Bam Adebayo", pos: "C", ovr: 89 },
+  { name: "Damian Lillard", pos: "PG", ovr: 89 },
+  { name: "De'Aaron Fox", pos: "PG", ovr: 89 },
+  { name: "Jimmy Butler", pos: "SF", ovr: 89 },
+  { name: "Domantas Sabonis", pos: "C", ovr: 88 },
+  { name: "Paolo Banchero", pos: "PF", ovr: 88 },
+  { name: "Chet Holmgren", pos: "PF", ovr: 87 },
+  { name: "Tyrese Maxey", pos: "SG", ovr: 87 },
+  { name: "Zion Williamson", pos: "PF", ovr: 87 },
+  { name: "Lauri Markkanen", pos: "PF", ovr: 86 },
+  { name: "Derrick White", pos: "PG", ovr: 86 },
+  { name: "Karl-Anthony Towns", pos: "C", ovr: 86 },
+  { name: "Alperen Sengun", pos: "C", ovr: 85 },
+  { name: "Mikal Bridges", pos: "SF", ovr: 84 },
+  { name: "Jalen Williams", pos: "SF", ovr: 84 },
+  { name: "Aaron Gordon", pos: "PF", ovr: 83 },
+  { name: "OG Anunoby", pos: "SF", ovr: 83 },
+  { name: "Austin Reaves", pos: "SG", ovr: 82 },
+  { name: "Josh Hart", pos: "SG", ovr: 82 },
+  { name: "Brook Lopez", pos: "C", ovr: 81 },
+  { name: "Alex Caruso", pos: "SG", ovr: 81 },
+  { name: "Klay Thompson", pos: "SG", ovr: 80 }
+];
+
+const POSITIONS = ["PG", "SG", "SF", "PF", "C"];
+
+class GameEngine {
+  constructor() {
+    this.deck = [...PLAYERS].sort(() => Math.random() - 0.5);
+    this.currentPlayer = null;
+    this.p1 = { budget: 20, roster: { PG: null, SG: null, SF: null, PF: null, C: null } };
+    this.p2 = { budget: 20, roster: { PG: null, SG: null, SF: null, PF: null, C: null } };
+    this.buyerPending = null;
+    this.initSlots();
+  }
+
+  initSlots() {
+    ['p1', 'p2'].forEach(p => {
+      const container = document.getElementById(`${p}Slots`);
+      container.innerHTML = '';
+      POSITIONS.forEach(pos => {
+        container.innerHTML += `
+          <div class="slot" id="${p}_${pos}">
+            <span class="slot-pos">${pos}</span>
+            <span class="slot-filled">- пусто -</span>
+          </div>`;
+      });
+    });
+  }
+
+  isTeamFull(playerNum) {
+    const r = playerNum === 1 ? this.p1.roster : this.p2.roster;
+    return Object.values(r).every(x => x !== null);
+  }
+
+  nextTurn() {
+    if (this.isTeamFull(1) && this.isTeamFull(2)) {
+      this.finishGame();
+      return;
+    }
+
+    if (this.deck.length === 0) {
+      alert("Пул игроков закончился!");
+      this.finishGame();
+      return;
+    }
+
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('actionControls').style.display = 'flex';
+
+    this.currentPlayer = this.deck.pop();
+    document.getElementById('currentName').innerText = this.currentPlayer.name;
+    document.getElementById('currentMeta').innerText = `Позиция: ${this.currentPlayer.pos} | Рейтинг 2K: ???`;
+  }
+
+  skipPlayer() {
+    this.nextTurn();
+  }
+
+  buyPlayer(playerNum) {
+    const cost = parseInt(document.getElementById('bidAmount').value) || 1;
+    const playerObj = playerNum === 1 ? this.p1 : this.p2;
+
+    if (this.isTeamFull(playerNum)) {
+      alert(`У Игрока ${playerNum} уже заполнена вся стартовая пятерка!`);
+      return;
+    }
+    if (playerObj.budget < cost) {
+      alert(`Недостаточно бюджета! Доступно: $${playerObj.budget}`);
+      return;
+    }
+
+    playerObj.budget -= cost;
+    document.getElementById(`p${playerNum}Budget`).innerText = `$${playerObj.budget}`;
+
+    this.buyerPending = { playerNum, cost };
+    this.openPositionModal(playerNum);
+  }
+
+  openPositionModal(playerNum) {
+    const roster = playerNum === 1 ? this.p1.roster : this.p2.roster;
+    const container = document.getElementById('posButtons');
+    container.innerHTML = '';
+
+    POSITIONS.forEach(pos => {
+      const isOccupied = roster[pos] !== null;
+      const isNative = this.currentPlayer.pos === pos;
+      const btn = document.createElement('button');
+      btn.className = 'pos-btn';
+      btn.innerText = pos + (isNative ? ' ★' : '');
+      btn.disabled = isOccupied;
+      btn.onclick = () => this.assignPosition(pos);
+      container.appendChild(btn);
+    });
+
+    document.getElementById('posModal').classList.add('active');
+  }
+
+  assignPosition(pos) {
+    const { playerNum } = this.buyerPending;
+    const roster = playerNum === 1 ? this.p1.roster : this.p2.roster;
+    
+    roster[pos] = this.currentPlayer;
+    
+    const slotEl = document.querySelector(`#p${playerNum}_${pos} .slot-filled`);
+    slotEl.innerText = this.currentPlayer.name;
+    slotEl.style.color = '#38bdf8';
+
+    document.getElementById('posModal').classList.remove('active');
+    this.nextTurn();
+  }
+
+  calculateScore(roster) {
+    return Object.values(roster).reduce((acc, p) => acc + (p ? p.ovr : 0), 0);
+  }
+
+  finishGame() {
+    const s1 = this.calculateScore(this.p1.roster);
+    const s2 = this.calculateScore(this.p2.roster);
+
+    let banner = "";
+    if (s1 > s2) banner = `🏆 Победил Игрок 1 (${s1} vs ${s2})`;
+    else if (s2 > s1) banner = `🏆 Победил Игрок 2 (${s2} vs ${s1})`;
+    else banner = `🤝 Ничья! (${s1} : ${s2})`;
+
+    document.getElementById('winnerBanner').innerText = banner;
+
+    let tableHtml = `
+      <table class="results-table">
+        <tr><th>Поз</th><th>Игрок 1 (Рейт)</th><th>Игрок 2 (Рейт)</th></tr>
+    `;
+
+    POSITIONS.forEach(pos => {
+      const p1P = this.p1.roster[pos];
+      const p2P = this.p2.roster[pos];
+      tableHtml += `
+        <tr>
+          <td><b>${pos}</b></td>
+          <td>${p1P ? `${p1P.name} (<b>${p1P.ovr}</b>)` : '-'}</td>
+          <td>${p2P ? `${p2P.name} (<b>${p2P.ovr}</b>)` : '-'}</td>
+        </tr>
+      `;
+    });
+
+    tableHtml += `
+      <tr style="font-weight:bold; background:#0b1120;">
+        <td>ИТОГО</td>
+        <td>${s1} OVR</td>
+        <td>${s2} OVR</td>
+      </tr>
+    </table>`;
+
+    document.getElementById('finalScores').innerHTML = tableHtml;
+    document.getElementById('finishModal').classList.add('active');
+  }
+}
+
+const game = new GameEngine();
+</script>
+</body>
+</html>
